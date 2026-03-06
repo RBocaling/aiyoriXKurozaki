@@ -30,7 +30,7 @@ const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/members" element={<Members />} />
-      <Route path="/member/:id" element={<MemberProfile />} />
+      <Route path="/member/:name" element={<MemberProfile />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />

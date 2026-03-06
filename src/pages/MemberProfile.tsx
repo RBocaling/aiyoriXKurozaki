@@ -12,6 +12,7 @@ import { getBorderImage } from "@/data/borderFrames";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Helmet } from "react-helmet-async";
+import MemberBio from "@/components/MemberBio";
 const SOCIAL_ICON_STYLES: Record<string, string> = {
   default: "bg-secondary text-secondary-foreground hover:bg-surface-hover",
   neon: "bg-transparent border border-[hsl(var(--glow))] text-foreground shadow-[0_0_10px_hsl(var(--glow)/0.3)] hover:shadow-[0_0_20px_hsl(var(--glow)/0.5)]",
@@ -28,43 +29,65 @@ const GunslolIcon = () => (
   </svg>
 );
 
+
+
 const MemberProfile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { members, getMember, updateMember } = useMembers();
-  const { setMemberTrack, clearMemberTrack, pause, play, isPlaying } = useMusic();
+  const { setMemberTrack, clearMemberTrack, pause, play, isPlaying } =
+    useMusic();
   const [showIntro, setShowIntro] = useState(true);
   const [showBlur, setShowBlur] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  const member = useMemo(() => getMember(id || ""), [id, members]);
+  const decodedName = useMemo(() => {
+    return name?.replace(/_/g, " ") || "";
+  }, [name]);
+
+  const member = useMemo(() => {
+    return members.find(
+      (m) => m.name.toLowerCase() === decodedName.toLowerCase(),
+    );
+  }, [decodedName, members]);
+
+  console.log("member", name);
+  
   const children = useMemo(
-    () => member?.children?.map(cid => members.find(m => m.id === cid)).filter(Boolean) || [],
-    [member, members]
+    () =>
+      member?.children
+        ?.map((cid) => members.find((m) => m.id === cid))
+        .filter(Boolean) || [],
+    [member, members],
   );
   const partners = useMemo(
-    () => member?.partners?.map(pid => members.find(m => m.id === pid)).filter(Boolean) || [],
-    [member, members]
+    () =>
+      member?.partners
+        ?.map((pid) => members.find((m) => m.id === pid))
+        .filter(Boolean) || [],
+    [member, members],
   );
   const genColor = useMemo(
-    () => GENERATIONS.find(g => g.name === member?.generation)?.color || "hsl(210 80% 60%)",
-    [member]
+    () =>
+      GENERATIONS.find((g) => g.name === member?.generation)?.color ||
+      "hsl(210 80% 60%)",
+    [member],
   );
 
   // Increment views on mount
- useEffect(() => {
-   if (!member) return;
+  useEffect(() => {
+    if (!member) return;
 
-   const incrementViews = async () => {
-     await supabase
-       .from("members")
-       .update({ views: member.views + 1 })
-       .eq("id", member.id);
-   };
+    const incrementViews = async () => {
+      await supabase
+        .from("members")
+        .update({ views: member.views + 1 })
+        .eq("id", member.id);
+    };
 
-   incrementViews();
- }, [id]);
+    incrementViews();
+  }, [member]);
 
   // Blur screen click handler - pause main, play member track
   const handleBlurClick = useCallback(() => {
@@ -88,7 +111,9 @@ const MemberProfile = () => {
   const handleIntroComplete = useCallback(() => setShowIntro(false), []);
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/member/${id}`;
+    const slug = member.name.replaceAll(" ", "_");
+
+    const url = `${window.location.origin}/member/${slug}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast({ title: "Link copied!", description: url });
@@ -99,8 +124,15 @@ const MemberProfile = () => {
     return (
       <main className="relative z-10 min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="font-display text-2xl text-chrome-bright mb-4">Member not found</h1>
-          <Link to="/members" className="font-accent text-sm tracking-wider text-muted-foreground hover:text-foreground">← Back to Members</Link>
+          <h1 className="font-display text-2xl text-chrome-bright mb-4">
+            Member not found
+          </h1>
+          <Link
+            to="/members"
+            className="font-accent text-sm tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            ← Back to Members
+          </Link>
         </div>
       </main>
     );
@@ -110,25 +142,91 @@ const MemberProfile = () => {
   const iconStyle = SOCIAL_ICON_STYLES[member.socialIconStyle || "default"];
 
   const socials = [
-    { key: "discord", icon: <MessageCircle className="w-4 h-4" />, label: "Discord", value: member.discord, href: "#" },
-    { key: "twitter", icon: <ExternalLink className="w-4 h-4" />, label: "X", value: member.twitter, href: member.twitter },
-    { key: "telegram", icon: <Send className="w-4 h-4" />, label: "Telegram", value: member.telegram, href: member.telegram },
-    { key: "instagram", icon: <Instagram className="w-4 h-4" />, label: "Instagram", value: member.instagram, href: member.instagram },
-    { key: "tiktok", icon: <SiTiktok className="w-4 h-4" />, label: "TikTok", value: member.tiktok, href: member.tiktok },
-    { key: "kick", icon: <SiKick className="w-4 h-4" />, label: "Kick", value: member.kick, href: member.kick },
-    { key: "spotify", icon: <SiSpotify className="w-4 h-4" />, label: "Spotify", value: member.spotify, href: member.spotify },
-    { key: "gunslol", icon: <GunslolIcon />, label: "Guns.lol", value: member.gunslol, href: member.gunslol },
-    { key: "facebook", icon: <SiFacebook className="w-4 h-4" />, label: "Facebook", value: member.facebook, href: member.facebook },
-    { key: "steam", icon: <SiSteam className="w-4 h-4" />, label: "Steam", value: member.steam, href: member.steam },
-    { key: "roblox", icon: <SiRoblox className="w-4 h-4" />, label: "Roblox", value: member.roblox, href: member.roblox },
-  ].filter(s => s.value);
+    {
+      key: "discord",
+      icon: <MessageCircle className="w-4 h-4" />,
+      label: "Discord",
+      value: member.discord,
+      href: "#",
+    },
+    {
+      key: "twitter",
+      icon: <ExternalLink className="w-4 h-4" />,
+      label: "X",
+      value: member.twitter,
+      href: member.twitter,
+    },
+    {
+      key: "telegram",
+      icon: <Send className="w-4 h-4" />,
+      label: "Telegram",
+      value: member.telegram,
+      href: member.telegram,
+    },
+    {
+      key: "instagram",
+      icon: <Instagram className="w-4 h-4" />,
+      label: "Instagram",
+      value: member.instagram,
+      href: member.instagram,
+    },
+    {
+      key: "tiktok",
+      icon: <SiTiktok className="w-4 h-4" />,
+      label: "TikTok",
+      value: member.tiktok,
+      href: member.tiktok,
+    },
+    {
+      key: "kick",
+      icon: <SiKick className="w-4 h-4" />,
+      label: "Kick",
+      value: member.kick,
+      href: member.kick,
+    },
+    {
+      key: "spotify",
+      icon: <SiSpotify className="w-4 h-4" />,
+      label: "Spotify",
+      value: member.spotify,
+      href: member.spotify,
+    },
+    {
+      key: "gunslol",
+      icon: <GunslolIcon />,
+      label: "Guns.lol",
+      value: member.gunslol,
+      href: member.gunslol,
+    },
+    {
+      key: "facebook",
+      icon: <SiFacebook className="w-4 h-4" />,
+      label: "Facebook",
+      value: member.facebook,
+      href: member.facebook,
+    },
+    {
+      key: "steam",
+      icon: <SiSteam className="w-4 h-4" />,
+      label: "Steam",
+      value: member.steam,
+      href: member.steam,
+    },
+    {
+      key: "roblox",
+      icon: <SiRoblox className="w-4 h-4" />,
+      label: "Roblox",
+      value: member.roblox,
+      href: member.roblox,
+    },
+  ].filter((s) => s.value);
 
   return (
     <>
       <Helmet>
         <title>{member.name} | AIYORI X KUROZAKI</title>
       </Helmet>
-      
+
       {showIntro && member.introAnimation && (
         <MemberIntro
           type={member.introAnimation}
@@ -316,22 +414,7 @@ const MemberProfile = () => {
             </motion.p>
 
             {/* BIO */}
-            {member.bio && (
-              <motion.div
-                className=" px-4 py-3 mb-8 max-w-md mx-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: showIntro ? 0 : 1, y: showIntro ? 20 : 0 }}
-                transition={{ delay: 0.75, duration: 0.6 }}
-              >
-                <p className="font-accent text-[9px] tracking-[0.35em] text-muted-foreground mb-2">
-                  BIO
-                </p>
-
-                <p className="font-body text-xs md:text-sm text-foreground leading-relaxed whitespace-pre-line">
-                  {member.bio}
-                </p>
-              </motion.div>
-            )}
+            {member.bio && <MemberBio bio={member.bio} visible={!showIntro} />}
             {/* Social links */}
             <motion.div
               className="flex gap-3 flex-wrap justify-center mb-8"
@@ -384,7 +467,9 @@ const MemberProfile = () => {
                           key={p.id}
                           member={p}
                           index={i}
-                          onClick={() => navigate(`/member/${p.id}`)}
+                          onClick={() =>
+                            navigate(`/member/${p.name.replaceAll(" ", "_")}`)
+                          }
                         />
                       ),
                   )}
@@ -410,7 +495,11 @@ const MemberProfile = () => {
                           key={child.id}
                           member={child}
                           index={i}
-                          onClick={() => navigate(`/member/${child.id}`)}
+                          onClick={() =>
+                            navigate(
+                              `/member/${child.name.replaceAll(" ", "_")}`,
+                            )
+                          }
                         />
                       ),
                   )}
@@ -422,6 +511,6 @@ const MemberProfile = () => {
       </main>
     </>
   );
-};
+};;
 
 export default MemberProfile;

@@ -116,7 +116,6 @@ export function MemberProvider({ children }: { children: ReactNode }) {
     fetchMembers();
   }, []);
 
-  // ➕ ADD
   const addMember = async (member: any) => {
     const { error } = await supabase.from("members").insert([mapToDB(member)]);
 
@@ -128,7 +127,6 @@ export function MemberProvider({ children }: { children: ReactNode }) {
     setMembers((prev) => [...prev, member]);
   };
 
-  // ✏️ UPDATE
   const updateMember = async (member: any) => {
     const { error } = await supabase
       .from("members")
