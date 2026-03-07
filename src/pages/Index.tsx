@@ -19,30 +19,9 @@ const Index = () => {
   };
 
   return (
-    <div onClick={handleTrigger}>
+    <div >
       {showIntro && <IntroAnimation onComplete={handleIntroComplete} />}
       <VideoBackground />
-
-      {/* Click to start prompt */}
-      {!triggered && !showIntro && (
-        <motion.div
-          className="fixed inset-0 z-[150] flex items-center justify-center cursor-pointer"
-          style={{ background: "hsl(0 0% 2% / 0.85)" }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div
-            className="text-center"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <p className="font-accent text-sm tracking-[0.5em] text-white/60">
-              CLICK ANYWHERE TO ENTER
-            </p>
-          </motion.div>
-        </motion.div>
-      )}
 
       <main className="relative z-10 min-h-screen flex items-center justify-center pb-16">
         <div

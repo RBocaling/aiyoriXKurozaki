@@ -4,8 +4,22 @@ import VideoBackground from "@/components/VideoBackground";
 import MemberCard from "@/components/MemberCard";
 import { useMembers, GENERATIONS } from "@/contexts/MemberContext";
 import axkLogo from "@/assets/aiyorixkurozaki-logo.png";
+import { useCallback, useState } from "react";
+import IntroAnimation from "@/components/IntroAnimation";
+import { useMusic } from "@/contexts/MusicContext";
 
 const Members = () => {
+    const [triggered, setTriggered] = useState(false);
+    const { play, isPlaying } = useMusic();
+  
+    const [showIntro, setShowIntro] = useState(true);
+    const handleIntroComplete = useCallback(() => setShowIntro(false), []);
+  const handleTrigger = () => {
+    if (!triggered) {
+      setTriggered(true);
+      if (!isPlaying) play();
+    }
+  };
   const navigate = useNavigate();
   const { members } = useMembers();
 
@@ -17,7 +31,28 @@ const Members = () => {
   const totalMembers = members.length;
 
   return (
-    <>
+    <div onClick={handleTrigger}>
+      {showIntro && <IntroAnimation onComplete={handleIntroComplete} />}
+      {/* Click to start prompt */}
+      {!triggered && !showIntro && (
+        <motion.div
+          className="fixed inset-0 z-[150] flex items-center justify-center cursor-pointer"
+          style={{ background: "hsl(0 0% 2% / 0.85)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="text-center"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <p className="font-accent text-sm tracking-[0.5em] text-white/60">
+              CLICK ANYWHERE TO ENTER
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
       <VideoBackground />
       <main className="relative z-10 min-h-screen pt-20 pb-20">
         <div className="container mx-auto px-6 flex flex-col items-center">
@@ -78,7 +113,7 @@ const Members = () => {
                     member={member}
                     index={gi * 10 + i}
                     onClick={() =>
-                      navigate(`/member/${member.name.replace(/ /g, "_")}`)
+                      navigate(`/${member.name.replace(/ /g, "_")}`)
                     }
                   />
                 ))}
@@ -130,7 +165,7 @@ const Members = () => {
           </motion.div>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 

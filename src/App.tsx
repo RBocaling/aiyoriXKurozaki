@@ -28,9 +28,9 @@ const AppRoutes = () => (
     <Navbar />
     <MusicPlayer />
     <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/members" element={<Members />} />
-      <Route path="/member/:name" element={<MemberProfile />} />
+      <Route path="/about" element={<Index />} />
+      <Route path="/" element={<Members />} />
+      <Route path="/:name" element={<MemberProfile />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />

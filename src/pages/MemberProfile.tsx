@@ -113,7 +113,7 @@ const MemberProfile = () => {
   const handleCopyLink = () => {
     const slug = member.name.replaceAll(" ", "_");
 
-    const url = `${window.location.origin}/member/${slug}`;
+    const url = `${window.location.origin}/${slug}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast({ title: "Link copied!", description: url });
@@ -128,7 +128,7 @@ const MemberProfile = () => {
             Member not found
           </h1>
           <Link
-            to="/members"
+            to="/"
             className="font-accent text-sm tracking-wider text-muted-foreground hover:text-foreground"
           >
             ← Back to Members
@@ -324,7 +324,7 @@ const MemberProfile = () => {
             transition={{ delay: 0.1, duration: 0.6 }}
           >
             <button
-              onClick={() => navigate("/members")}
+              onClick={() => navigate("/")}
               className="flex items-center gap-2 font-accent text-sm tracking-wider text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> BACK
@@ -468,7 +468,7 @@ const MemberProfile = () => {
                           member={p}
                           index={i}
                           onClick={() =>
-                            navigate(`/member/${p.name.replaceAll(" ", "_")}`)
+                            navigate(`/${p.name.replaceAll(" ", "_")}`)
                           }
                         />
                       ),
@@ -497,7 +497,7 @@ const MemberProfile = () => {
                           index={i}
                           onClick={() =>
                             navigate(
-                              `/member/${child.name.replaceAll(" ", "_")}`,
+                              `/${child.name.replaceAll(" ", "_")}`,
                             )
                           }
                         />

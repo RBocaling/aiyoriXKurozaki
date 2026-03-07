@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import VideoBackground from "@/components/VideoBackground";
 import { BORDER_FRAMES } from "@/data/borderFrames";
-import { Member } from "@/data/types";
 import { useMembers, GENERATIONS } from "@/contexts/MemberContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, Edit, Save, X, Eye, LogOut, CheckCircle, AlertTriangle, Upload } from "lucide-react";
@@ -36,12 +35,12 @@ const AdminPanel = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [modal, setModal] = useState<ModalType>(null);
-  const [viewMember, setViewMember] = useState<Member | null>(null);
+  const [viewMember, setViewMember] = useState<any | null>(null);
   const [toastMsg, setToastMsg] = useState<ToastType>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Partial<Member>>(defaultForm());
+  const [form, setForm] = useState<Partial<any>>(defaultForm());
 
-  function defaultForm(): Partial<Member> {
+  function defaultForm(): Partial<any> {
     return {
       name: "",
       bio: "",
@@ -82,8 +81,8 @@ const AdminPanel = () => {
   };
 
   const openAdd = () => { setForm(defaultForm()); setEditingId(null); setModal("add"); };
-  const openEdit = (m: Member) => { setForm({ ...m }); setEditingId(m.id); setModal("edit"); };
-  const openView = (m: Member) => { setViewMember(m); setModal("view"); };
+  const openEdit = (m: any) => { setForm({ ...m }); setEditingId(m.id); setModal("edit"); };
+  const openView = (m: any) => { setViewMember(m); setModal("view"); };
   const closeModal = () => { setModal(null); setViewMember(null); setEditingId(null); };
 
   const handleSave = () => {
@@ -113,7 +112,7 @@ const AdminPanel = () => {
     closeModal();
   };
 
-  const handleDelete = (m: Member) => {
+  const handleDelete = (m: any) => {
     showConfirm(`Delete ${m.name}? This cannot be undone.`, () => {
       deleteMember(m.id);
       setToastMsg(null);
@@ -599,7 +598,7 @@ const AdminPanel = () => {
                 whileHover={{ scale: 1.02 }}
                 onClick={() => {
                   closeModal();
-                  navigate(`/member/${viewMember.id}`);
+                  navigate(`/${viewMember.name.replace(/ /g, "_")}`);
                 }}
               >
                 VIEW PROFILE

@@ -220,7 +220,7 @@ const MemberBio = ({ bio, visible }: MemberBioProps) => {
           </AnimatePresence>
 
           {/* Bio text */}
-          <div className="relative z-20 py-4 px-1">
+          <div className="relative z-20 py-2 px-1">
             <div className="relative z-20 py-4 px-1">
               <motion.p
                 className="font-body text-sm md:text-base leading-relaxed text-center tracking-wide"

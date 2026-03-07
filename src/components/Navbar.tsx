@@ -5,8 +5,8 @@ const Navbar = () => {
   const location = useLocation();
 
   const links = [
-    { path: "/", label: "HOME" },
-    { path: "/members", label: "MEMBERS" },
+    { path: "/", label: "MEMBERS" },
+    { path: "/about", label: "ABOUT" },
   ];
 
   return (

@@ -49,6 +49,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.volume = 0.7;
+      !audioRef.current;
     }
     return () => { audioRef.current?.pause(); };
   }, []);
@@ -74,8 +75,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const audio = audioRef.current;
     if (!audio) return;
     const onTime = () => { setProgress(audio.currentTime); setDuration(audio.duration || 0); };
-    const onEnd = () => { if (!memberTrackUrl) { setCurrentTrack(c => (c + 1) % tracks.length); } };
-    audio.addEventListener("timeupdate", onTime);
+const onEnd = () => {
+  const audio = audioRef.current;
+  if (!audio) return;
+
+  // reset progress
+  setProgress(0);
+
+  // restart song
+  audio.currentTime = 0;
+
+  // play again
+  audio.play().catch(() => {});
+};    audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("ended", onEnd);
     return () => { audio.removeEventListener("timeupdate", onTime); audio.removeEventListener("ended", onEnd); };
   }, [memberTrackUrl, tracks.length]);
