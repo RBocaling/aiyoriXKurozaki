@@ -6,6 +6,7 @@ import { BORDER_FRAMES } from "@/data/borderFrames";
 import { useMembers, GENERATIONS } from "@/contexts/MemberContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, Edit, Save, X, Eye, LogOut, CheckCircle, AlertTriangle, Upload } from "lucide-react";
+import { uploadFile } from "@/lib/upload";
 
 const INTRO_ANIMATIONS = ["iris", "glitch", "shatter", "vortex", "lightning"];
 const PARTICLE_EFFECTS = ["none", "snow", "fire", "rain", "stars", "sakura", "smoke", "sparkle"];
@@ -705,11 +706,15 @@ const AdminPanel = () => {
 /* Reusable media input: URL text field + file upload button */
 function MediaInput({ label, value, onChange, placeholder, accept }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; accept?: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    onChange(url);
+
+    const url = await uploadFile(file, "members");
+
+    if (url) {
+      onChange(url);
+    }
   };
   return (
     <div>
