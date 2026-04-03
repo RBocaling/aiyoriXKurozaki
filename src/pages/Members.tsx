@@ -21,7 +21,7 @@ const Members = () => {
     }
   };
   const navigate = useNavigate();
-  const { members } = useMembers();
+  const { members, actionLoading } = useMembers();
 
   const generationsWithMembers = GENERATIONS.map(gen => ({
     ...gen,
@@ -30,6 +30,13 @@ const Members = () => {
 
   const totalMembers = members.length;
 
+  if (actionLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center text-white">
+        Loading members...
+      </div>
+    );
+  }
   return (
     <div onClick={handleTrigger}>
       {showIntro && <IntroAnimation onComplete={handleIntroComplete} />}

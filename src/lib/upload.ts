@@ -1,22 +1,11 @@
-import { supabase } from "./supabase";
+import { uploadFileAPI } from "@/api/member.api";
 
-export async function uploadFile(file: File, folder: string) {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-  const filePath = `${folder}/${fileName}`;
-
-  const { error } = await supabase.storage
-    .from("members-media")
-    .upload(filePath, file);
-
-  if (error) {
+export async function uploadFile(file: File): Promise<string | null> {
+  try {
+    const url = await uploadFileAPI(file);
+    return url;
+  } catch (error) {
     console.error("Upload error:", error);
     return null;
   }
-
-  const { data } = supabase.storage
-    .from("members-media")
-    .getPublicUrl(filePath);
-
-  return data.publicUrl;
 }

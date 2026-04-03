@@ -11,7 +11,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const CREDS = { username: "admin", password: "admin123" };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("slz_auth") === "1");
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => sessionStorage.getItem("slz_auth") === "1",
+  );
 
   const login = (user: string, pass: string) => {
     if (user === CREDS.username && pass === CREDS.password) {
@@ -22,9 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const logout = () => { setIsLoggedIn(false); sessionStorage.removeItem("slz_auth"); };
+  const logout = () => {
+    setIsLoggedIn(false);
+    sessionStorage.removeItem("slz_auth");
+  };
 
-  return <AuthContext.Provider value={{ isLoggedIn, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
