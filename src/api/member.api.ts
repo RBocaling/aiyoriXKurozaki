@@ -1,5 +1,5 @@
+const BASE_URL = "https://aiyuri-backend-3.onrender.com";
 // const BASE_URL = "https://aiyuri-backend-3.onrender.com";
-const BASE_URL = "http://localhost:3001";
 
 // 🔥 DB -> CAMEL CASE
 const mapFromDB = (row: any): any => ({
@@ -92,7 +92,7 @@ export const uploadFileAPI = async (file: File): Promise<string> => {
 };
 
 export const resetAllAPI = async () => {
-  await fetch("http://localhost:3001/members/reset/all", {
+  await fetch("https://aiyuri-backend-3.onrender.com/members/reset/all", {
     method: "DELETE",
   });
 };
