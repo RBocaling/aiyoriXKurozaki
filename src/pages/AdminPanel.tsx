@@ -3,68 +3,49 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import VideoBackground from "@/components/VideoBackground";
 import { BORDER_FRAMES } from "@/data/borderFrames";
-import { Member } from "@/data/types";
 import { useMembers, GENERATIONS } from "@/contexts/MemberContext";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Plus,
-  Trash2,
-  Edit,
-  Save,
-  X,
-  Eye,
-  LogOut,
-  CheckCircle,
-  AlertTriangle,
-  Upload,
-  Link as LinkIcon,
-} from "lucide-react";
+import { Plus, Trash2, Edit, Save, X, Eye, LogOut, CheckCircle, AlertTriangle, Upload } from "lucide-react";
 import { uploadFile } from "@/lib/upload";
 import { resetAllAPI } from "@/api/member.api";
 
 const INTRO_ANIMATIONS = ["iris", "glitch", "shatter", "vortex", "lightning"];
-const PARTICLE_EFFECTS = [
-  "none",
-  "snow",
-  "fire",
-  "rain",
-  "stars",
-  "sakura",
-  "smoke",
-  "sparkle",
-];
-const SOCIAL_ICON_STYLES = [
-  "default",
-  "neon",
-  "gradient",
-  "glass",
-  "outline",
-  "pill",
-];
+const PARTICLE_EFFECTS = ["none", "snow", "fire", "rain", "stars", "sakura", "smoke", "sparkle"];
+const SOCIAL_ICON_STYLES = ["default", "neon", "gradient", "glass", "outline", "pill"];
 const ANIMATIONS = ["float", "pulse", "spin", "glitch"];
 const CUSTOM_DESIGNS = ["chrome", "glass", "neon"];
 
+const SOCIAL_FIELDS = [
+  { key: "discord", ph: "Discord username" },
+  { key: "twitter", ph: "X / Twitter URL" },
+  { key: "telegram", ph: "Telegram URL" },
+  { key: "instagram", ph: "Instagram URL" },
+  { key: "tiktok", ph: "TikTok URL" },
+  { key: "kick", ph: "Kick URL" },
+  { key: "spotify", ph: "Spotify URL" },
+  { key: "gunslol", ph: "Guns.lol URL" },
+  { key: "facebook", ph: "Facebook URL" },
+  { key: "steam", ph: "Steam URL" },
+  { key: "roblox", ph: "Roblox URL" },
+];
+
 type ModalType = "add" | "edit" | "view" | null;
-type ToastType = {
-  type: "success" | "error" | "confirm";
-  message: string;
-  onConfirm?: () => void;
-} | null;
+type ToastType = { type: "success" | "error" | "confirm"; message: string; onConfirm?: () => void } | null;
 
 const AdminPanel = () => {
-  const [isUploading, setIsUploading] = useState(false);
   const { members, addMember, updateMember, deleteMember } = useMembers();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [modal, setModal] = useState<ModalType>(null);
-  const [viewMember, setViewMember] = useState<Member | null>(null);
+  const [viewMember, setViewMember] = useState<any | null>(null);
   const [toastMsg, setToastMsg] = useState<ToastType>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Partial<Member>>(defaultForm());
+  const [form, setForm] = useState<Partial<any>>(defaultForm());
 
-  function defaultForm(): Partial<Member> {
+  function defaultForm(): Partial<any> {
     return {
       name: "",
+      bio: "",
       avatar: "",
       generation: GENERATIONS[0].name,
       borderFrame: "gold",
@@ -74,10 +55,18 @@ const AdminPanel = () => {
       twitter: "",
       telegram: "",
       instagram: "",
+      tiktok: "",
+      kick: "",
+      spotify: "",
+      gunslol: "",
+      facebook: "",
+      steam: "",
+      roblox: "",
       introAnimation: "iris",
       particleEffect: "none",
       socialIconStyle: "default",
       children: [],
+      partners: [],
       soundUrl: "",
       backgroundImage: "",
       backgroundGif: "",
@@ -93,107 +82,69 @@ const AdminPanel = () => {
     setToastMsg({ type: "confirm", message, onConfirm });
   };
 
-  const openAdd = () => {
-    setForm(defaultForm());
-    setEditingId(null);
-    setModal("add");
-  };
-  const openEdit = (m: Member) => {
-    setForm({ ...m });
-    setEditingId(m.id);
-    setModal("edit");
-  };
-  const openView = (m: Member) => {
-    setViewMember(m);
-    setModal("view");
-  };
-  const closeModal = () => {
-    setModal(null);
-    setViewMember(null);
-    setEditingId(null);
-  };
+  const openAdd = () => { setForm(defaultForm()); setEditingId(null); setModal("add"); };
+  const openEdit = (m: any) => { setForm({ ...m }); setEditingId(m.id); setModal("edit"); };
+  const openView = (m: any) => { setViewMember(m); setModal("view"); };
+  const closeModal = () => { setModal(null); setViewMember(null); setEditingId(null); };
 
-  const handleSave = async () => {
-    if (!form.name?.trim()) {
-      showToast("error", "Member name is required!");
-      return;
-    }
-    const member: Member = {
-      id: editingId || crypto.randomUUID(),
+  const handleSave = () => {
+    if (!form.name?.trim()) { showToast("error", "Member name is required!"); return; }
+    const member: any = {
+      id: editingId || Date.now().toString(),
       name: form.name || "",
-      avatar:
-        form.avatar ||
-        `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-
+      bio: form.bio || "",
+      avatar: form.avatar || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
       generation: form.generation || GENERATIONS[0].name,
-
       borderFrame: form.borderFrame || "gold",
       animation: form.animation || "float",
-      customDesign: form.customDesign || "chrome",
-
-      discord: form.discord || "",
-      twitter: form.twitter || "",
-      telegram: form.telegram || "",
-      instagram: form.instagram || "",
-
-      soundUrl: form.soundUrl || "",
-      backgroundImage: form.backgroundImage || "",
-      backgroundGif: form.backgroundGif || "",
-
-      introAnimation: form.introAnimation || "iris",
-      particleEffect: form.particleEffect || "none",
-      socialIconStyle: form.socialIconStyle || "default",
-
+      customDesign: (form.customDesign as any) || "chrome",
+      discord: form.discord, twitter: form.twitter, telegram: form.telegram, instagram: form.instagram,
+      tiktok: form.tiktok, kick: form.kick, spotify: form.spotify, gunslol: form.gunslol,
+      facebook: form.facebook, steam: form.steam, roblox: form.roblox,
+      soundUrl: form.soundUrl, backgroundImage: form.backgroundImage, backgroundGif: form.backgroundGif,
+      introAnimation: (form.introAnimation as any) || "iris",
+      particleEffect: (form.particleEffect as any) || "none",
+      socialIconStyle: (form.socialIconStyle as any) || "default",
       children: form.children || [],
+      partners: form.partners || [],
+      views: 0,
     };
-    if (editingId) {
-      await updateMember(member);
-      showToast("success", `${member.name} updated successfully!`);
-    } else {
-      await addMember(member);
-      showToast("success", `${member.name} added successfully!`);
-    }
+    if (editingId) { updateMember(member); showToast("success", `${member.name} updated successfully!`); }
+    else { addMember(member); showToast("success", `${member.name} added successfully!`); }
     closeModal();
   };
 
-  const handleDelete = (m: Member) => {
-    showConfirm(`Delete ${m.name}? This cannot be undone.`, async () => {
-      await deleteMember(m.id);
+  const handleDelete = (m: any) => {
+    showConfirm(`Delete ${m.name}? This cannot be undone.`, () => {
+      deleteMember(m.id);
       setToastMsg(null);
       showToast("success", `${m.name} deleted.`);
     });
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/admin/login");
-  };
+  const handleLogout = () => { logout(); navigate("/admin/login"); };
 
-  const resetAllData = async () => {
-    try {
-      await resetAllAPI();
-      window.location.reload();
-    } catch (error) {
-      console.error("Reset error:", error);
-    }
-  };
-  const updateField = (key: string, value: any) =>
-    setForm((f) => ({ ...f, [key]: value }));
+   const resetAllData = async () => {
+     try {
+       await resetAllAPI();
+       window.location.reload();
+     } catch (error) {
+       console.error("Reset error:", error);
+     }
+   };
+  const updateField = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }));
   const toggleChild = (childId: string) => {
     const cur = form.children || [];
-    updateField(
-      "children",
-      cur.includes(childId)
-        ? cur.filter((c) => c !== childId)
-        : [...cur, childId],
-    );
+    updateField("children", cur.includes(childId) ? cur.filter(c => c !== childId) : [...cur, childId]);
+  };
+  const togglePartner = (partnerId: string) => {
+    const cur = form.partners || [];
+    updateField("partners", cur.includes(partnerId) ? cur.filter(c => c !== partnerId) : [...cur, partnerId]);
   };
 
-  const selectCls =
-    "w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground font-body focus:outline-none focus:ring-1 focus:ring-ring";
+  const selectCls = "w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground font-body focus:outline-none focus:ring-1 focus:ring-ring";
   const inputCls = selectCls;
-  const labelCls =
-    "font-accent text-[10px] tracking-wider text-muted-foreground block mb-1";
+  const labelCls = "font-accent text-[10px] tracking-wider text-muted-foreground block mb-1";
 
   return (
     <>
@@ -317,13 +268,26 @@ const AdminPanel = () => {
                     placeholder="Member name"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Bio</label>
+
+                  <textarea
+                    className={inputCls + " min-h-[90px] resize-none"}
+                    value={form.bio || ""}
+                    onChange={(e) => updateField("bio", e.target.value)}
+                    placeholder="Short description about the member..."
+                    maxLength={500}
+                  />
+
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {(form.bio || "").length}/500
+                  </p>
+                </div>
                 <MediaInput
                   label="Avatar"
                   value={form.avatar || ""}
                   onChange={(v) => updateField("avatar", v)}
                   placeholder="Avatar URL or upload"
-                  isUploading={isUploading}
-                  setIsUploading={setIsUploading}
                 />
                 <div>
                   <label className={labelCls}>Generation</label>
@@ -427,12 +391,7 @@ const AdminPanel = () => {
               {/* Social */}
               <h4 className={labelCls + " mb-2"}>SOCIAL MEDIA</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                {[
-                  { key: "discord", ph: "Discord username" },
-                  { key: "twitter", ph: "X / Twitter URL" },
-                  { key: "telegram", ph: "Telegram URL" },
-                  { key: "instagram", ph: "Instagram URL" },
-                ].map((s) => (
+                {SOCIAL_FIELDS.map((s) => (
                   <input
                     key={s.key}
                     className={inputCls}
@@ -451,16 +410,12 @@ const AdminPanel = () => {
                   value={form.backgroundImage || ""}
                   onChange={(v) => updateField("backgroundImage", v)}
                   placeholder="Image URL or upload"
-                  isUploading={isUploading}
-                  setIsUploading={setIsUploading}
                 />
                 <MediaInput
                   label="Background GIF"
                   value={form.backgroundGif || ""}
                   onChange={(v) => updateField("backgroundGif", v)}
                   placeholder="GIF URL or upload"
-                  isUploading={isUploading}
-                  setIsUploading={setIsUploading}
                 />
                 <MediaInput
                   label="Background Music"
@@ -468,8 +423,6 @@ const AdminPanel = () => {
                   onChange={(v) => updateField("soundUrl", v)}
                   placeholder="Music URL or upload"
                   accept="audio/*"
-                  isUploading={isUploading}
-                  setIsUploading={setIsUploading}
                 />
               </div>
 
@@ -492,6 +445,28 @@ const AdminPanel = () => {
                     />
                   </motion.button>
                 ))}
+              </div>
+
+              {/* Partners */}
+              <h4 className={labelCls + " mb-3"}>PARTNERS</h4>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {members
+                  .filter((m) => m.id !== editingId)
+                  .map((m) => (
+                    <motion.button
+                      key={m.id}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-accent tracking-wider transition-all ${
+                        (form.partners || []).includes(m.id)
+                          ? "bg-[hsl(320_60%_55%)] text-foreground"
+                          : "glass border border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => togglePartner(m.id)}
+                    >
+                      {m.name}
+                    </motion.button>
+                  ))}
               </div>
 
               {/* Children */}
@@ -524,15 +499,13 @@ const AdminPanel = () => {
                   <X className="w-4 h-4 inline mr-1" /> CANCEL
                 </button>
                 <motion.button
-                  disabled={isUploading}
-                  className={`px-6 py-2.5 rounded-xl font-accent text-xs tracking-wider ${
-                    isUploading
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:opacity-90"
-                  }`}
+                  className="px-6 py-2.5 rounded-xl font-accent text-xs tracking-wider bg-primary text-primary-foreground hover:opacity-90"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
                 >
-                  {isUploading ? "UPLOADING..." : editingId ? "UPDATE" : "SAVE"}
+                  <Save className="w-4 h-4 inline mr-1" />{" "}
+                  {editingId ? "UPDATE" : "SAVE"}
                 </motion.button>
               </div>
             </motion.div>
@@ -575,9 +548,16 @@ const AdminPanel = () => {
               <h2 className="font-display text-xl tracking-wider text-chrome-bright mb-1">
                 {viewMember.name}
               </h2>
-              <p className="font-accent text-xs tracking-[0.3em] text-muted-foreground mb-4">
-                {viewMember.generation}
-              </p>
+              {viewMember.bio && (
+                <div className="glass border border-border rounded-lg px-4 py-3 mb-4 text-left">
+                  <p className="font-accent text-[9px] tracking-wider text-muted-foreground mb-1">
+                    BIO
+                  </p>
+                  <p className="font-body text-xs text-foreground leading-relaxed">
+                    {viewMember.bio}
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2 text-left mb-4">
                 {[
@@ -602,34 +582,6 @@ const AdminPanel = () => {
                 ))}
               </div>
 
-              {(viewMember.discord ||
-                viewMember.twitter ||
-                viewMember.telegram ||
-                viewMember.instagram) && (
-                <div className="flex flex-wrap gap-2 justify-center mb-4">
-                  {viewMember.discord && (
-                    <span className="px-3 py-1 rounded-lg glass border border-border text-xs font-accent text-muted-foreground">
-                      Discord: {viewMember.discord}
-                    </span>
-                  )}
-                  {viewMember.twitter && (
-                    <span className="px-3 py-1 rounded-lg glass border border-border text-xs font-accent text-muted-foreground">
-                      X
-                    </span>
-                  )}
-                  {viewMember.telegram && (
-                    <span className="px-3 py-1 rounded-lg glass border border-border text-xs font-accent text-muted-foreground">
-                      Telegram
-                    </span>
-                  )}
-                  {viewMember.instagram && (
-                    <span className="px-3 py-1 rounded-lg glass border border-border text-xs font-accent text-muted-foreground">
-                      Instagram
-                    </span>
-                  )}
-                </div>
-              )}
-
               {viewMember.soundUrl && (
                 <p className="text-[10px] font-accent text-muted-foreground mb-2">
                   🎵 Has background music
@@ -645,13 +597,18 @@ const AdminPanel = () => {
                   👶 {viewMember.children!.length} children
                 </p>
               )}
+              {(viewMember.partners?.length || 0) > 0 && (
+                <p className="text-[10px] font-accent text-muted-foreground">
+                  💍 {viewMember.partners!.length} partner(s)
+                </p>
+              )}
 
               <motion.button
                 className="mt-4 px-6 py-2.5 rounded-xl font-accent text-xs tracking-wider bg-primary text-primary-foreground"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => {
                   closeModal();
-                  navigate(`/member/${viewMember.id}`);
+                  navigate(`/${viewMember.name.replace(/ /g, "_")}`);
                 }}
               >
                 VIEW PROFILE
@@ -727,7 +684,7 @@ const AdminPanel = () => {
                   </p>
                   <p className="font-accent text-[10px] tracking-wider text-muted-foreground truncate">
                     {member.generation} · {member.borderFrame} ·{" "}
-                    {member.animation} · {member.introAnimation || "iris"} ·{" "}
+                    {member.introAnimation || "iris"} ·{" "}
                     {member.particleEffect || "none"}
                   </p>
                 </div>
@@ -764,87 +721,37 @@ const AdminPanel = () => {
 };
 
 /* Reusable media input: URL text field + file upload button */
-function MediaInput({
-  label,
-  value,
-  onChange,
-  placeholder,
-  accept,
-  isUploading,
-  setIsUploading,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  accept?: string;
-  isUploading: boolean;
-  setIsUploading: (v: boolean) => void;
-}) {
+function MediaInput({ label, value, onChange, placeholder, accept }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; accept?: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
-
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || isUploading) return;
+    if (!file) return;
 
-    try {
-      setIsUploading(true);
+    const url = await uploadFile(file);
 
-      const url = await uploadFile(file);
-
-      if (!url) {
-        alert("Upload failed");
-        return;
-      }
-
+    if (url) {
       onChange(url);
-    } catch (err) {
-      console.error(err);
-      alert("Upload error");
-    } finally {
-      setIsUploading(false);
     }
   };
-
   return (
     <div>
-      <label className="font-accent text-[10px] tracking-wider text-muted-foreground block mb-1">
-        {label}
-      </label>
-
-      <div className="flex gap-2 items-center">
+      <label className="font-accent text-[10px] tracking-wider text-muted-foreground block mb-1">{label}</label>
+      <div className="flex gap-2">
         <input
           className="flex-1 bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground font-body focus:outline-none focus:ring-1 focus:ring-ring"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          disabled={isUploading}
         />
-
         <button
           type="button"
-          disabled={isUploading}
-          className={`px-3 py-2.5 rounded-xl glass border border-border shrink-0 transition ${
-            isUploading
-              ? "opacity-50 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className="px-3 py-2.5 rounded-xl glass border border-border text-muted-foreground hover:text-foreground transition-colors shrink-0"
           onClick={() => fileRef.current?.click()}
+          title="Upload file"
         >
-          {isUploading ? (
-            <span className="text-xs">Uploading...</span>
-          ) : (
-            <Upload className="w-4 h-4" />
-          )}
+          <Upload className="w-4 h-4" />
         </button>
-
-        <input
-          ref={fileRef}
-          type="file"
-          accept={accept || "image/*,image/gif"}
-          className="hidden"
-          onChange={handleFile}
-        />
+        <input ref={fileRef} type="file" accept={accept || "image/*,image/gif"} className="hidden" onChange={handleFile} />
       </div>
     </div>
   );

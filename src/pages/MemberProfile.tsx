@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Copy, Check, MessageCircle, ExternalLink, Send, Instagram, Eye } from "lucide-react";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Helmet } from "react-helmet-async";
 import MemberBio from "@/components/MemberBio";
+import { increaseViewAPI } from "@/api/member.api";
 const SOCIAL_ICON_STYLES: Record<string, string> = {
   default: "bg-secondary text-secondary-foreground hover:bg-surface-hover",
   neon: "bg-transparent border border-[hsl(var(--glow))] text-foreground shadow-[0_0_10px_hsl(var(--glow)/0.3)] hover:shadow-[0_0_20px_hsl(var(--glow)/0.5)]",
@@ -75,20 +76,15 @@ const MemberProfile = () => {
     [member],
   );
 
-  // Increment views on mount
-  useEffect(() => {
-    if (!member) return;
+const hasViewed = useRef(false);
 
-    const incrementViews = async () => {
-      await supabase
-        .from("members")
-        .update({ views: member.views + 1 })
-        .eq("id", member.id);
-    };
+useEffect(() => {
+  if (!member?.id || hasViewed.current) return;
 
-    incrementViews();
-  }, [member]);
+  hasViewed.current = true;
 
+  increaseViewAPI(member.id);
+}, [member?.id]);
   // Blur screen click handler - pause main, play member track
   const handleBlurClick = useCallback(() => {
     setShowBlur(false);

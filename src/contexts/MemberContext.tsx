@@ -5,39 +5,111 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { Member } from "@/data/types";
-import {
-  fetchMembersAPI,
-  addMemberAPI,
-  updateMemberAPI,
-  deleteMemberAPI,
-} from "../api/member.api";
 import { GENERATIONS } from "@/data/members";
 
+const API_URL = "http://localhost:3001/members";
+
 interface MemberContextType {
-  members: Member[];
+  members: any[];
   loading: boolean;
   actionLoading: boolean;
-  addMember: (member: Member) => Promise<void>;
-  updateMember: (member: Member) => Promise<void>;
+  addMember: (member: any) => Promise<void>;
+  updateMember: (member: any) => Promise<void>;
   deleteMember: (id: string) => Promise<void>;
-  getMember: (id: string) => Member | undefined;
+  getMember: (id: string) => any | undefined;
 }
 
 const MemberContext = createContext<MemberContextType | null>(null);
 
 export function MemberProvider({ children }: { children: ReactNode }) {
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const mapFromDB = (row: any): any => ({
+    id: row.id,
+    name: row.name,
+    avatar: row.avatar,
+    generation: row.generation,
+    borderFrame: row.borderframe,
+    animation: row.animation,
+    customDesign: row.customdesign,
+
+    bio: row.bio,
+
+    discord: row.discord,
+    twitter: row.twitter,
+    telegram: row.telegram,
+    instagram: row.instagram,
+    tiktok: row.tiktok,
+    kick: row.kick,
+    spotify: row.spotify,
+    gunslol: row.gunslol,
+    facebook: row.facebook,
+    steam: row.steam,
+    roblox: row.roblox,
+
+    soundUrl: row.soundurl,
+    backgroundImage: row.backgroundimage,
+    backgroundGif: row.backgroundgif,
+
+    introAnimation: row.introanimation,
+    particleEffect: row.particleeffect,
+    socialIconStyle: row.socialiconstyle,
+
+    children: row.children || [],
+    partners: row.partners || [],
+
+    views: row.views || 0,
+  });
+
+  const mapToDB = (member: any) => ({
+    id: member.id,
+    name: member.name,
+    avatar: member.avatar,
+    generation: member.generation,
+    borderframe: member.borderFrame,
+    animation: member.animation,
+    customdesign: member.customDesign,
+
+    bio: member.bio,
+
+    discord: member.discord,
+    twitter: member.twitter,
+    telegram: member.telegram,
+    instagram: member.instagram,
+    tiktok: member.tiktok,
+    kick: member.kick,
+    spotify: member.spotify,
+    gunslol: member.gunslol,
+    facebook: member.facebook,
+    steam: member.steam,
+    roblox: member.roblox,
+
+    soundurl: member.soundUrl,
+    backgroundimage: member.backgroundImage,
+    backgroundgif: member.backgroundGif,
+
+    introanimation: member.introAnimation,
+    particleeffect: member.particleEffect,
+    socialiconstyle: member.socialIconStyle,
+
+    children: member.children || [],
+    partners: member.partners || [],
+
+    views: member.views || 0,
+  });
 
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const data = await fetchMembersAPI();
-      setMembers(data);
-    } catch (error) {
-      console.error("Fetch error:", error);
+
+      const res = await fetch(API_URL);
+      const data = await res.json();
+
+      setMembers(data.map(mapFromDB));
+    } catch (err) {
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -47,25 +119,37 @@ export function MemberProvider({ children }: { children: ReactNode }) {
     fetchMembers();
   }, []);
 
-  const addMember = async (member: Member) => {
+  const addMember = async (member: any) => {
     try {
       setActionLoading(true);
-      await addMemberAPI(member);
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mapToDB(member)),
+      });
+
       setMembers((prev) => [...prev, member]);
-    } catch (error) {
-      console.error("Add error:", error);
+    } catch (err) {
+      console.error("Add error:", err);
     } finally {
       setActionLoading(false);
     }
   };
 
-  const updateMember = async (member: Member) => {
+  const updateMember = async (member: any) => {
     try {
       setActionLoading(true);
-      await updateMemberAPI(member);
+
+      await fetch(`${API_URL}/${member.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mapToDB(member)),
+      });
+
       setMembers((prev) => prev.map((m) => (m.id === member.id ? member : m)));
-    } catch (error) {
-      console.error("Update error:", error);
+    } catch (err) {
+      console.error("Update error:", err);
     } finally {
       setActionLoading(false);
     }
@@ -74,10 +158,14 @@ export function MemberProvider({ children }: { children: ReactNode }) {
   const deleteMember = async (id: string) => {
     try {
       setActionLoading(true);
-      await deleteMemberAPI(id);
+
+      await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
       setMembers((prev) => prev.filter((m) => m.id !== id));
-    } catch (error) {
-      console.error("Delete error:", error);
+    } catch (err) {
+      console.error("Delete error:", err);
     } finally {
       setActionLoading(false);
     }
@@ -104,9 +192,7 @@ export function MemberProvider({ children }: { children: ReactNode }) {
 
 export function useMembers() {
   const ctx = useContext(MemberContext);
-  if (!ctx) {
-    throw new Error("useMembers must be used within MemberProvider");
-  }
+  if (!ctx) throw new Error("useMembers must be used within MemberProvider");
   return ctx;
 }
 

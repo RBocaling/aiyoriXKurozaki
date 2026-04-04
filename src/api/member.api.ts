@@ -1,4 +1,5 @@
-const BASE_URL = "https://aiyuri-backend-3.onrender.com";
+// const BASE_URL = "https://aiyuri-backend-3.onrender.com";
+const BASE_URL = "http://localhost:3001";
 
 // 🔥 DB -> CAMEL CASE
 const mapFromDB = (row: any): any => ({
@@ -91,7 +92,17 @@ export const uploadFileAPI = async (file: File): Promise<string> => {
 };
 
 export const resetAllAPI = async () => {
-  await fetch("https://aiyuri-backend-3.onrender.com/members/reset/all", {
+  await fetch("http://localhost:3001/members/reset/all", {
     method: "DELETE",
   });
+};
+
+export const increaseViewAPI = async (id: string): Promise<void> => {
+  try {
+    await fetch(`${BASE_URL}/members/view/${id}`, {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Increase view error:", error);
+  }
 };

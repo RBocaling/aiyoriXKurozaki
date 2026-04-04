@@ -1,11 +1,13 @@
-import { uploadFileAPI } from "@/api/member.api";
+export async function uploadFile(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
 
-export async function uploadFile(file: File): Promise<string | null> {
-  try {
-    const url = await uploadFileAPI(file);
-    return url;
-  } catch (error) {
-    console.error("Upload error:", error);
-    return null;
-  }
+  const res = await fetch("http://localhost:3001/members/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  return data.url;
 }
