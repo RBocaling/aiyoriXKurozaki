@@ -7,7 +7,7 @@ import {
 } from "react";
 import { GENERATIONS } from "@/data/members";
 
-const API_URL = "http://localhost:3001/members";
+const API_URL = "https://aiyuri-backend-3.onrender.com/members";
 
 interface MemberContextType {
   members: any[];
