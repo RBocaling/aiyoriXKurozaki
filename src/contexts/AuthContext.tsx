@@ -8,7 +8,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const CREDS = { username: "admin", password: "admin123" };
+const CREDS = { username: "Ayrzk202", password: "Crbrs2526!" };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("slz_auth") === "1");
